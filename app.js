@@ -1,0 +1,27 @@
+const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+let currentUser=null, profile=null;
+const $=s=>document.querySelector(s);
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000)}
+function openAuth(mode){$("#modal").classList.remove("hidden");$("#modalTitle").textContent=mode==="login"?"로그인":"회원가입";
+$("#authForm").innerHTML=mode==="login"?`<input id="email" type="email" placeholder="이메일" required><input id="password" type="password" placeholder="비밀번호" required><button>로그인</button><p>계정이 없으신가요? <a href="#" onclick="openAuth('signup')">회원가입</a></p>`:`<input id="name" placeholder="이름 또는 회사 담당자명" required><input id="email" type="email" placeholder="이메일" required><input id="password" type="password" minlength="6" placeholder="비밀번호(6자 이상)" required><select id="role"><option value="company">기업회원</option><option value="partner">영업파트너</option></select><button>회원가입</button>`;
+$("#authForm").onsubmit=async e=>{e.preventDefault();const email=$("#email").value,password=$("#password").value;
+if(mode==="login"){const {error}=await sb.auth.signInWithPassword({email,password});if(error)return toast(error.message);closeModal();toast("로그인되었습니다.");loadSession()}
+else{const {data,error}=await sb.auth.signUp({email,password,options:{data:{name:$("#name").value,role:$("#role").value}}});if(error)return toast(error.message);if(data.user)toast("회원가입이 완료되었습니다. 이메일 인증 설정을 확인하세요.");closeModal();loadSession()}};
+}
+function closeModal(){$("#modal").classList.add("hidden")}
+async function logout(){await sb.auth.signOut();currentUser=null;profile=null;$("#dashboard").classList.add("hidden");$("#authArea").classList.remove("hidden");toast("로그아웃되었습니다.");}
+async function loadSession(){const {data:{session}}=await sb.auth.getSession();if(!session){$("#dashboard").classList.add("hidden");return}currentUser=session.user;
+const {data,error}=await sb.from("profiles").select("*").eq("id",currentUser.id).single();
+if(error){console.error(error);toast("프로필 설정을 확인하세요.");return}profile=data;
+$("#authArea").classList.add("hidden");$("#dashboard").classList.remove("hidden");$("#welcome").textContent=`${profile.display_name||"회원"}님, 환영합니다!`;$("#roleText").textContent=profile.role==="company"?"기업회원":profile.role==="partner"?"영업파트너":"관리자";if(profile.role==="admin")$("#adminMenu").classList.remove("hidden");
+await refreshData();}
+function showTab(name){document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$("#tab-"+name).classList.remove("hidden");}
+async function refreshData(){const [c,p,o]=await Promise.all([sb.from("profiles").select("id",{count:"exact",head:true}).eq("role","company"),sb.from("profiles").select("id",{count:"exact",head:true}).eq("role","partner"),sb.from("offers").select("id",{count:"exact",head:true})]);
+$("#companyCount").textContent=c.count??0;$("#partnerCount").textContent=p.count??0;$("#offerCount").textContent=o.count??0;
+const {data:companies}=await sb.from("profiles").select("*").eq("role","company").limit(20);$("#companiesList").innerHTML=(companies||[]).map(x=>`<div class="card"><h3>${x.company_name||x.display_name}</h3><p>${x.phone||""}</p><p>${x.bio||"등록된 기업 소개가 없습니다."}</p></div>`).join("")||"등록된 기업이 없습니다.";
+const {data:partners}=await sb.from("profiles").select("*").eq("role","partner").limit(20);$("#partnersList").innerHTML=(partners||[]).map(x=>`<div class="card"><h3>${x.display_name}</h3><p>${x.bio||"전문 분야를 등록해보세요."}</p></div>`).join("")||"등록된 파트너가 없습니다.";
+const {data:offers}=await sb.from("offers").select("*").order("created_at",{ascending:false}).limit(30);$("#offersList").innerHTML=(offers||[]).map(x=>`<div class="card"><h3>${x.title}</h3><p>${x.description||""}</p><p><b>${x.category||"기타"}</b></p></div>`).join("")||"등록된 상품·제안이 없습니다.";
+$("#recentActivity").textContent=`현재 ${c.count||0}개 기업, ${p.count||0}명의 영업파트너가 플랫폼에 등록되어 있습니다.`;}
+function openCompanyForm(){if(!currentUser)return openAuth("login");$("#modal").classList.remove("hidden");$("#modalTitle").textContent="기업 정보 등록";$("#authForm").innerHTML=`<input id="companyName" placeholder="회사명" required><input id="phone" placeholder="전화번호"><textarea id="bio" placeholder="기업 소개"></textarea><button>저장</button>`;$("#authForm").onsubmit=async e=>{e.preventDefault();const {error}=await sb.from("profiles").update({company_name:$("#companyName").value,phone:$("#phone").value,bio:$("#bio").value}).eq("id",currentUser.id);if(error)return toast(error.message);closeModal();toast("기업 정보가 저장되었습니다.");refreshData()}}
+function openOfferForm(){if(!currentUser)return openAuth("login");$("#modal").classList.remove("hidden");$("#modalTitle").textContent="상품·제안 등록";$("#authForm").innerHTML=`<input id="offerTitle" placeholder="상품 또는 서비스명" required><input id="category" placeholder="카테고리"><textarea id="description" placeholder="소개"></textarea><button>등록</button>`;$("#authForm").onsubmit=async e=>{e.preventDefault();const {error}=await sb.from("offers").insert({owner_id:currentUser.id,title:$("#offerTitle").value,category:$("#category").value,description:$("#description").value});if(error)return toast(error.message);closeModal();toast("상품이 등록되었습니다.");refreshData()}}
+sb.auth.onAuthStateChange(()=>setTimeout(loadSession,0));loadSession();

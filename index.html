@@ -1,0 +1,32 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>모두의 성장 | 운영형 플랫폼</title><link rel="stylesheet" href="style.css">
+</head><body>
+<header><a class="logo" href="#"><span>MG</span><b>모두의 성장</b><small>동반 성장 비즈니스 플랫폼</small></a>
+<nav><a href="#about">플랫폼 소개</a><a href="#features">서비스</a><a href="#dashboard">대시보드</a></nav>
+<div id="authArea"><button class="outline" onclick="openAuth('login')">로그인</button><button onclick="openAuth('signup')">회원가입</button></div></header>
+
+<section class="hero" id="about"><div><p class="eyebrow">기업과 영업파트너를 연결하는</p><h1>모두의 성장</h1><h2>동반 성장 비즈니스 플랫폼</h2>
+<p>좋은 제품과 서비스를 가진 기업과 전문 영업 네트워크를 연결하여<br>함께 성장하는 새로운 비즈니스 생태계를 만듭니다.</p>
+<button class="primary" onclick="openAuth('signup')">서비스 시작하기 →</button></div>
+<div class="hero-card"><h3>함께 연결하고<br>함께 판매하고<br>함께 성장합니다.</h3><div class="network">기업　↔　플랫폼　↔　파트너</div></div></section>
+
+<section class="features" id="features"><article>🎯<b>기업 매칭</b><span>검증된 비즈니스 연결</span></article><article>🤝<b>영업파트너 매칭</b><span>전문 판매 네트워크</span></article><article>🛒<b>공동 판매·마케팅</b><span>판로 확대 · 매출 성장</span></article><article>📈<b>성과 분석</b><span>거래 데이터 기반 분석</span></article><article>🤖<b>AI 비즈니스 지원</b><span>추천 · 매칭 · 분석</span></article><article>🌱<b>지속가능 성장</b><span>ESG 동반 성장</span></article></section>
+
+<section id="dashboard" class="app hidden">
+<div class="app-head"><div><b id="welcome">환영합니다!</b><small id="roleText"></small></div><button class="outline" onclick="logout()">로그아웃</button></div>
+<div class="app-grid">
+<aside><button onclick="showTab('overview')">⌂ 대시보드</button><button onclick="showTab('companies')">▣ 기업</button><button onclick="showTab('partners')">♧ 영업파트너</button><button onclick="showTab('offers')">📦 상품·제안</button><button id="adminMenu" class="hidden" onclick="showTab('admin')">⚙ 관리자</button></aside>
+<main>
+<section id="tab-overview" class="tab"><h2>대시보드</h2><div class="stats"><div><small>등록 기업</small><b id="companyCount">-</b></div><div><small>영업파트너</small><b id="partnerCount">-</b></div><div><small>등록 상품</small><b id="offerCount">-</b></div></div><div class="panel"><h3>최근 활동</h3><div id="recentActivity">데이터를 불러오는 중입니다.</div></div></section>
+<section id="tab-companies" class="tab hidden"><div class="tab-title"><h2>기업</h2><button class="primary" onclick="openCompanyForm()">기업 등록</button></div><div id="companiesList" class="cards"></div></section>
+<section id="tab-partners" class="tab hidden"><h2>영업파트너</h2><div id="partnersList" class="cards"></div></section>
+<section id="tab-offers" class="tab hidden"><div class="tab-title"><h2>상품·제안</h2><button class="primary" onclick="openOfferForm()">상품 등록</button></div><div id="offersList" class="cards"></div></section>
+<section id="tab-admin" class="tab hidden"><h2>관리자 운영</h2><div class="panel"><h3>회원 역할 변경</h3><p>운영자는 Supabase SQL에서 관리자 권한을 부여하거나 별도 관리자 화면으로 확장할 수 있습니다.</p></div></section>
+</main></div></section>
+
+<div class="modal hidden" id="modal"><div class="modal-box"><button class="x" onclick="closeModal()">×</button><h2 id="modalTitle"></h2><form id="authForm"></form></div></div>
+<div id="toast"></div>
+<footer>© 2026 모두의 성장 · ModooGrowth</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script><script src="app.js"></script></body></html>

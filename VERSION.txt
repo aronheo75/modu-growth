@@ -1,0 +1,5 @@
+모두의 성장 2.0 통합 업데이트 후보
+Version: 2.0.0-preview
+Build date: 2026-11-24
+Scope: premium landing page refinement, role-aware workspace navigation, private company document library upload/list/download/delete, additive Supabase migration.
+Deployment status: not deployed; database migration requires review and test.

@@ -1,21 +1,11 @@
-모두의 성장 홈페이지 전체 파일 업데이트 안내
+모두의 성장 2.0 통합 업데이트 안내
 
 1. ZIP 압축을 풉니다.
-2. GitHub의 aronheo75/modu-growth 저장소에서 main 브랜치 최상위(root)를 엽니다.
-3. Add file > Upload files를 선택합니다.
-4. 압축을 푼 폴더 안의 파일 7개와 이 안내 파일을 업로드해 기존 파일을 교체합니다.
-   - index.html
-   - style.css
-   - app.js
-   - config.js
-   - config.example.js
-   - README.md
-   - supabase-schema.sql
-5. Commit changes를 누르고 GitHub Pages 배포를 기다립니다.
-6. https://aronheo75.github.io/modu-growth/ 에 접속해 Ctrl+F5로 새로고침합니다.
+2. GitHub 저장소 aronheo75/modu-growth의 main 브랜치 최상위(root)에서 Add file > Upload files를 선택합니다.
+3. index.html, style.css, app.js, config.js, config.example.js, README.md, GITHUB_UPLOAD_GUIDE.txt를 업로드해 기존 파일과 교체합니다.
+4. Commit changes 후 GitHub Pages 배포를 기다립니다.
+5. https://aronheo75.github.io/modu-growth/ 에서 Ctrl+F5로 새로고침합니다.
 
-중요:
-- config.js에는 브라우저 공개용 Publishable Key만 포함되어 있습니다.
-- service_role/secret key를 절대 추가하지 마세요.
-- supabase-schema.sql은 이번 업데이트 때 실행하지 마세요. 기존 DB 정책/데이터 확인과 백업 후 별도로 검토해야 합니다.
-- 실제 회원가입/로그인은 배포 후 테스트가 필요합니다.
+중요: 기존 Supabase 회원과 데이터는 삭제하지 않습니다. supabase-schema.sql은 재실행하지 마세요.
+기업자료실을 활성화하려면 먼저 Supabase 백업을 만든 뒤 supabase-migration-documents.sql을 검토하고 별도로 실행해야 합니다. 적용 후 기업 계정으로 파일 업로드, 파트너 계정으로 공개 자료 다운로드, 비공개 자료 접근 차단을 각각 테스트하세요.
+config.js에는 브라우저 공개용 Publishable Key만 사용합니다. service_role/secret key를 절대 넣지 마세요.

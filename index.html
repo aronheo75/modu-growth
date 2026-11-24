@@ -95,13 +95,13 @@
         <p>기업과 파트너가 함께 만드는 새로운 비즈니스 생태계</p>
       </div>
       <div class="metrics-grid">
-        <div class="metric"><span class="metric-icon">♧</span><div><small>입점 기업 목표</small><strong>30<span>개+</span></strong></div></div>
-        <div class="metric"><span class="metric-icon">♙</span><div><small>영업파트너 목표</small><strong>100<span>명+</span></strong></div></div>
-        <div class="metric"><span class="metric-icon">▤</span><div><small>누적 거래액 목표(GMV)</small><strong>100<span>억원+</span></strong></div></div>
-        <div class="metric"><span class="metric-icon">↗</span><div><small>평균 매출 성장 목표</small><strong>30<span>%+</span></strong></div></div>
-        <div class="metric"><span class="metric-icon">✦</span><div><small>동반 성장 만족 목표</small><strong>95<span>%</span></strong></div></div>
+        <div class="metric"><span class="metric-icon">♧</span><div><small>제휴 기업 1차 목표</small><strong>50<span>개사</span></strong></div></div>
+        <div class="metric"><span class="metric-icon">♙</span><div><small>비즈니스 파트너 1차 목표</small><strong>500<span>명</span></strong></div></div>
+        <div class="metric"><span class="metric-icon">▤</span><div><small>기업·파트너 동반성장</small><strong>WIN<span>-WIN</span></strong></div></div>
+        <div class="metric"><span class="metric-icon">↗</span><div><small>기업별 맞춤 영업</small><strong>AI<span> 기반</span></strong></div></div>
+        <div class="metric"><span class="metric-icon">✦</span><div><small>플랫폼 운영 방향</small><strong>투명<span>한 정산</span></strong></div></div>
       </div>
-      <p class="metric-disclaimer">※ 위 수치는 플랫폼 사업 목표 예시이며 실제 운영 실적과 구분됩니다.</p>
+      <p class="metric-disclaimer">※ 50개 기업·500명 파트너는 1차 사업 목표이며 실제 가입·거래 실적이 아닙니다. 화면의 샘플 대시보드 수치는 예시입니다.</p>
     </section>
 
     <section class="join-cards section-shell" id="stories">
@@ -146,7 +146,7 @@
           <div class="preview-heading admin-heading"><span>⚙</span><b>관리자 대시보드</b><small>플랫폼 운영관리</small></div>
           <div class="preview-content">
             <aside class="preview-side"><b>MG 운영관리자</b><span class="selected">⌂ 대시보드</span><span>전체 기업 관리</span><span>파트너 관리</span><span>상품·성과 조건</span><span>거래·정산 관리</span></aside>
-            <div class="preview-main"><b>플랫폼 운영 현황</b><div class="preview-stats"><span>전체 기업<strong>312개</strong></span><span>전체 파트너<strong>1,458명</strong></span><span>승인 대기<strong>15건</strong></span></div><div class="recommend-box"><b>승인 대기 목록</b><span>기업 가입 신청 <em>검토</em></span><span>파트너 가입 신청 <em>검토</em></span><span>신규 상품 등록 <em>검토</em></span></div></div>
+            <div class="preview-main"><b>플랫폼 운영 현황</b><div class="preview-stats"><span>제휴 기업 목표<strong>50개</strong></span><span>파트너 목표<strong>500명</strong></span><span>운영 기준<strong>검증</strong></span></div><div class="recommend-box"><b>승인 대기 목록</b><span>기업 가입 신청 <em>검토</em></span><span>파트너 가입 신청 <em>검토</em></span><span>신규 상품 등록 <em>검토</em></span></div></div>
           </div>
         </article>
       </div>
@@ -154,7 +154,7 @@
 
     <!-- 실제 로그인 후 노출되는 업무 화면: app.js와 연결 -->
     <section id="dashboard" class="member-workspace hidden section-shell">
-      <div class="workspace-top"><div><span class="section-kicker">MEMBER WORKSPACE</span><h2 id="welcome">환영합니다!</h2><p id="roleText"></p></div><button class="btn btn-outline" type="button" onclick="logout()">로그아웃</button></div>
+      <div class="workspace-top"><div><span class="section-kicker">MEMBER WORKSPACE · MOD O GROWTH 2.0</span><h2 id="welcome">환영합니다!</h2><p id="roleText"></p></div><button class="btn btn-outline" type="button" onclick="logout()">로그아웃</button></div>
       <div class="workspace-layout">
         <aside class="workspace-sidebar">
           <div class="workspace-brand"><span class="brand-symbol">MG</span><b>모두의 성장</b></div>
@@ -162,6 +162,7 @@
           <button class="workspace-tab" type="button" onclick="showTab('companies')">▣ 기업 관리</button>
           <button class="workspace-tab" type="button" onclick="showTab('partners')">♧ 영업파트너</button>
           <button class="workspace-tab" type="button" onclick="showTab('offers')">▤ 상품·서비스</button>
+          <button class="workspace-tab" type="button" onclick="showTab('documents')">▣ 기업자료실</button>
           <button id="adminMenu" class="workspace-tab hidden" type="button" onclick="showTab('admin')">⚙ 관리자</button>
         </aside>
         <div class="workspace-main">
@@ -173,6 +174,7 @@
           <section id="tab-companies" class="tab-panel hidden"><div class="panel-title"><h3>기업 관리</h3><button class="btn btn-primary" type="button" onclick="openCompanyForm()">기업 정보 등록</button></div><div id="companiesList" class="data-cards"></div></section>
           <section id="tab-partners" class="tab-panel hidden"><h3>영업파트너</h3><div id="partnersList" class="data-cards"></div></section>
           <section id="tab-offers" class="tab-panel hidden"><div class="panel-title"><h3>상품·서비스 관리</h3><button class="btn btn-primary" type="button" onclick="openOfferForm()">상품 등록</button></div><div id="offersList" class="data-cards"></div></section>
+          <section id="tab-documents" class="tab-panel hidden"><div class="panel-title"><div><h3 id="documentsHeading">기업자료실</h3><p class="muted">기업이 등록한 최신 영업자료를 안전하게 공유합니다.</p></div><button id="uploadDocumentBtn" class="btn btn-primary" type="button" onclick="openDocumentForm()">자료 업로드</button></div><div class="document-note">기업은 자료 공개 범위를 선택할 수 있습니다. 파트너에게 공개된 자료만 다운로드할 수 있습니다.</div><div id="documentsList" class="data-cards"></div></section>
           <section id="tab-admin" class="tab-panel hidden"><h3>관리자 운영</h3><div class="data-panel"><h4>플랫폼 운영 관리</h4><p>회원, 기업, 파트너, 상품 및 거래 현황을 관리합니다.</p></div></section>
         </div>
       </div>

@@ -158,7 +158,12 @@
     $("#roleText").textContent = roleNames[profile.role] || "회원";
     $("#adminMenu")?.classList.toggle("hidden", profile.role !== "admin");
     showTab("overview");
+    const uploadButton = $("#uploadDocumentBtn");
+    if (uploadButton) uploadButton.classList.toggle("hidden", profile.role !== "company");
+    const docsHeading = $("#documentsHeading");
+    if (docsHeading) docsHeading.textContent = profile.role === "company" ? "우리 기업 자료실" : "파트너 영업자료실";
     await refreshData();
+    await loadDocuments();
     $("#dashboard").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -198,7 +203,7 @@
     if (offerError) console.warn(offerError);
     $("#offersList").innerHTML = (offers || []).map((item) => `
       <article class="data-card"><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.description || "")}</p><p><b>${escapeHtml(item.category || "기타")}</b></p></article>`).join("") || '<p class="empty-state">등록된 상품·서비스가 없습니다.</p>';
-    $("#recentActivity").textContent = `현재 ${companiesCount.count ?? 0}개 기업, ${partnersCount.count ?? 0}명의 영업파트너가 등록되어 있습니다.`;
+    $("#recentActivity").textContent = "회원 정보와 거래 데이터는 권한에 따라 표시됩니다. 기업자료실에서 공유 자료를 확인할 수 있습니다.";
   }
 
   function openCompanyForm() {
@@ -246,6 +251,101 @@
     $("#modal").classList.remove("hidden");
   }
 
+
+  async function loadDocuments() {
+    if (!sb || !profile || !currentUser) return;
+    const list = $("#documentsList");
+    if (!list) return;
+    list.innerHTML = '<p class="empty-state">자료를 불러오는 중입니다.</p>';
+    let query = sb.from("company_documents").select("id,company_id,company_name,title,description,file_path,file_size,visibility,created_at").order("created_at", { ascending: false }).limit(100);
+    if (profile.role === "company") query = query.eq("company_id", currentUser.id);
+    const { data, error } = await query;
+    if (error) {
+      console.warn(error);
+      list.innerHTML = '<p class="empty-state">자료실 데이터베이스 설정이 필요합니다. 관리자에게 문의해 주세요.</p>';
+      return;
+    }
+    if (!data?.length) {
+      list.innerHTML = '<p class="empty-state">등록된 자료가 없습니다. 기업회원은 영업자료를 업로드할 수 있습니다.</p>';
+      return;
+    }
+    list.innerHTML = data.map(doc => `
+      <article class="data-card">
+        <h4>${escapeHtml(doc.title)}</h4>
+        <p>${escapeHtml(doc.description || "설명이 등록되지 않았습니다.")}</p>
+        <div class="document-meta">${escapeHtml(doc.company_name || "제휴기업")} · ${doc.visibility === "partners" ? "파트너 공개" : "기업 전용"} · ${new Date(doc.created_at).toLocaleDateString("ko-KR")} · ${formatBytes(doc.file_size)}</div>
+        <div class="document-actions"><button class="btn btn-outline btn-small" type="button" data-download-doc="${escapeHtml(doc.id)}">자료 다운로드</button>${profile.role === "company" ? `<button class="btn btn-outline btn-small" type="button" data-delete-doc="${escapeHtml(doc.id)}" data-file-path="${escapeHtml(doc.file_path)}">삭제</button>` : ""}</div>
+      </article>`).join("");
+    list.querySelectorAll("[data-download-doc]").forEach(btn => btn.addEventListener("click", () => downloadDocument(btn.dataset.downloadDoc)));
+    list.querySelectorAll("[data-delete-doc]").forEach(btn => btn.addEventListener("click", () => deleteDocument(btn.dataset.deleteDoc, btn.dataset.filePath)));
+  }
+
+  function formatBytes(bytes) {
+    if (!bytes) return "파일 크기 미상";
+    return bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  function openDocumentForm() {
+    if (profile?.role !== "company") return toast("기업회원만 자료를 업로드할 수 있습니다.");
+    $("#modalTitle").textContent = "기업 영업자료 업로드";
+    $("#authForm").innerHTML = `
+      <input id="docTitle" maxlength="100" placeholder="자료 제목" required>
+      <textarea id="docDescription" rows="3" maxlength="500" placeholder="자료 설명"></textarea>
+      <select id="docVisibility"><option value="partners">승인된 파트너에게 공개</option><option value="private">우리 기업만 열람</option></select>
+      <label class="file-label">파일 선택 (PDF, PPT, DOC, XLS, 이미지 / 최대 15MB)<input id="docFile" type="file" accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp" required></label>
+      <button type="submit">업로드</button>`;
+    $("#authForm").onsubmit = async (event) => {
+      event.preventDefault();
+      const file = $("#docFile").files[0];
+      if (!file) return toast("업로드할 파일을 선택해 주세요.");
+      if (file.size > 15 * 1024 * 1024) return toast("파일은 15MB 이하로 업로드해 주세요.");
+      const allowed = /\.(pdf|ppt|pptx|doc|docx|xls|xlsx|jpg|jpeg|png|webp)$/i;
+      if (!allowed.test(file.name)) return toast("지원하지 않는 파일 형식입니다.");
+      const submit = $("#authForm button[type='submit']");
+      submit.disabled = true; submit.textContent = "업로드 중...";
+      try {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${currentUser.id}/${crypto.randomUUID()}_${safeName}`;
+        const uploaded = await sb.storage.from("company-documents").upload(path, file, { upsert: false, contentType: file.type || "application/octet-stream" });
+        if (uploaded.error) throw uploaded.error;
+        const saved = await sb.from("company_documents").insert({
+          company_id: currentUser.id,
+          company_name: profile.company_name || profile.display_name || "제휴기업",
+          title: $("#docTitle").value.trim(),
+          description: $("#docDescription").value.trim(),
+          file_path: path,
+          file_size: file.size,
+          visibility: $("#docVisibility").value
+        });
+        if (saved.error) {
+          await sb.storage.from("company-documents").remove([path]);
+          throw saved.error;
+        }
+        closeModal(); toast("기업자료가 안전하게 등록되었습니다."); await loadDocuments();
+      } catch (error) {
+        console.error(error); toast(error.message || "자료 업로드에 실패했습니다.");
+      } finally { submit.disabled = false; submit.textContent = "업로드"; }
+    };
+    $("#modal").classList.remove("hidden");
+  }
+
+  async function downloadDocument(id) {
+    const { data: doc, error } = await sb.from("company_documents").select("file_path,title").eq("id", id).single();
+    if (error || !doc) return toast("자료에 접근할 수 없습니다.");
+    const { data, error: urlError } = await sb.storage.from("company-documents").createSignedUrl(doc.file_path, 60);
+    if (urlError || !data?.signedUrl) return toast("다운로드 권한을 확인해 주세요.");
+    const a = document.createElement("a"); a.href = data.signedUrl; a.download = doc.title || "company-document"; a.target = "_blank"; a.rel = "noopener"; a.click();
+  }
+
+  async function deleteDocument(id, path) {
+    if (!window.confirm("이 자료를 삭제할까요?")) return;
+    const { error } = await sb.from("company_documents").delete().eq("id", id);
+    if (error) return toast(error.message);
+    const removed = await sb.storage.from("company-documents").remove([path]);
+    if (removed.error) console.warn("파일 정리 필요:", removed.error);
+    toast("자료가 삭제되었습니다."); await loadDocuments();
+  }
+
   function bindUI() {
     $$("[data-open-auth]").forEach((button) => button.addEventListener("click", () => openAuth(button.dataset.openAuth, button.dataset.signupRole || "")));
     $$("[data-close-modal]").forEach((element) => element.addEventListener("click", closeModal));
@@ -264,6 +364,7 @@
   window.showTab = showTab;
   window.openCompanyForm = openCompanyForm;
   window.openOfferForm = openOfferForm;
+  window.openDocumentForm = openDocumentForm;
 
   document.addEventListener("DOMContentLoaded", () => {
     bindUI();

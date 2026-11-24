@@ -9,7 +9,8 @@
 - `app.js` — Supabase 이메일 인증, 프로필 및 목록 조회, 기업정보/상품 등록
 - `config.js` — 이 프로젝트의 Supabase Project URL 및 공개 Publishable Key
 - `config.example.js` — 다른 환경에서 사용할 설정 예시
-- `supabase-schema.sql` — 기본 테이블, 가입 프로필 자동 생성, RLS 정책 초안
+- `supabase-schema.sql` — 기존 기본 스키마 참고용
+- `supabase-migration-documents.sql` — 기업자료실 전용 추가 마이그레이션
 
 ## GitHub Pages 업데이트
 
@@ -33,3 +34,18 @@
 관리자 승인·회원 검증·파트너 매칭·거래/주문·수수료/정산 기능은 아직 실제 운영 기능으로 완성되지 않았습니다. 화면의 대시보드 미리보기 수치는 사업 목표 또는 시각적 예시이며 실제 운영 실적이 아닙니다.
 
 운영 전에는 RLS 정책, 개인정보 노출 범위, 관리자 권한 부여, 이메일 인증 리디렉션 URL을 별도로 점검해야 합니다.
+
+
+## 2.0 기업자료실 기능
+
+- 기업회원: PDF/PPT/DOC/XLS/이미지 파일(최대 15MB) 업로드, 파트너 공개 또는 기업 전용 설정, 본인 자료 삭제
+- 비즈니스 파트너: 파트너 공개 자료 조회 및 60초 서명 URL을 통한 다운로드
+- 파일은 비공개 Supabase Storage 버킷에 저장하며, 테이블 RLS와 Storage 정책으로 접근을 제한합니다.
+
+### 데이터베이스 적용 주의
+
+`supabase-migration-documents.sql`은 기존 `profiles` 테이블에 `id`, `role` 컬럼이 있고 role 값이 company/partner/admin인 구성을 전제로 하는 추가 스크립트입니다. 실행 전 Supabase 백업을 만들고, SQL 내용을 검토한 후 SQL Editor에서 별도로 실행하세요. `supabase-schema.sql` 전체를 다시 실행하거나 기존 테이블을 삭제하지 마세요. 실제 프로젝트의 RLS 정책에 따라 추가 조정이 필요할 수 있습니다.
+
+### 검증 범위
+
+정적 HTML/JS 검사와 패키지 파일 검토는 가능하지만, 실제 Supabase 프로젝트에 마이그레이션을 적용하거나 실제 회원 계정으로 업로드·다운로드를 확인한 것은 아닙니다. 배포 전 테스트 계정(기업/파트너/관리자)으로 권한을 확인해야 합니다.

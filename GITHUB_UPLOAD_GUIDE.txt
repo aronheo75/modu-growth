@@ -1,15 +1,17 @@
-모두의 성장 2.0 통합 업데이트 업로드 안내
+모두의 성장 2.0 최종 통합 업데이트 업로드 안내
 
 1. 기존 GitHub 저장소를 ZIP으로 백업합니다.
    https://github.com/aronheo75/modu-growth
 
-2. modoo-growth-2.0-editorial-integrated.zip을 다운로드하고 압축을 풉니다.
+2. modoo-growth-2.0-final-integrated.zip을 다운로드하고 압축을 풉니다.
 
 3. GitHub 저장소 main 브랜치에서 Add file > Upload files를 선택합니다.
 
-4. 압축을 푼 파일 9개를 저장소 최상위에 한꺼번에 올립니다.
+4. 압축을 푼 파일 11개를 저장소 최상위에 한꺼번에 올립니다.
    - index.html
    - style.css
+   - logo-symbol.png
+   - logo-concept-master.png
    - hero-growth-visual.png
    - app.js
    - config.js
@@ -24,7 +26,7 @@
 
 중요
 - config.js는 기존 Supabase 프로젝트 URL과 공개용 publishable/anon key를 보존합니다. 삭제하거나 임의로 바꾸지 마세요.
-- app.js도 기존 회원 기능 코드이므로 그대로 교체하세요.
+- app.js는 기존 회원 기능 코드이므로 그대로 교체합니다.
 - SQL 파일은 참고용이며 실행하지 마세요.
 - 기존 Supabase 프로젝트, 테이블, 회원 및 자료를 삭제하거나 초기화하지 마세요.
 - 운영 배포 후 실제 계정으로 로그인, 회원가입, 프로필 조회·수정, 상품 등록을 테스트해야 합니다.

@@ -154,3 +154,48 @@ button,input,textarea,select{font-family:inherit}
 }
 @media(min-width:761px) and (max-width:1100px){.hero-inner{width:calc(100% - 72px)}.hero-copy{max-width:650px}.hero-photo{background-position:58% center}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+
+/* FINAL BRAND SYSTEM — shoulder-to-shoulder WIN-WIN emblem */
+.brand{gap:10px;min-width:250px}
+.brand-symbol{display:block;width:54px;height:54px;object-fit:contain;flex:0 0 auto}
+.brand-copy{display:block;min-width:0}
+.brand-copy b{display:block;color:#fff;font-size:20px;line-height:1.18;letter-spacing:-.055em;font-weight:850;white-space:nowrap}
+.brand-copy small{display:block;color:#c0cede;font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:10px;font-weight:600;letter-spacing:-.015em;line-height:1.35;margin-top:5px;white-space:nowrap}
+.footer-brand .brand-symbol{width:48px;height:48px}
+.footer-brand .brand-copy b{font-size:18px}
+.footer-brand .brand-copy small{font-size:9px}
+
+/* Three distinct pillars; consistent spacing keeps links clear of body copy. */
+.pillar-grid{align-items:stretch}
+.pillar-card{display:flex;flex-direction:column;align-items:flex-start;min-height:360px;padding:32px 30px 28px;position:relative;overflow:hidden}
+.pillar-card .card-no{margin-bottom:18px}
+.pillar-icon{margin:8px 0 18px;line-height:1}
+.pillar-card h3{font-size:24px;line-height:1.42;margin:0 0 16px;letter-spacing:-.045em}
+.pillar-card p{font-size:13px;line-height:1.9;margin:0 0 28px;max-width:100%;overflow-wrap:keep-all}
+.pillar-card>a{position:static;display:inline-flex;align-items:center;gap:8px;margin-top:auto;padding-top:18px;font-size:12px;font-weight:800}
+.pillar-card>a b{margin-left:0}
+.pillar-card:nth-child(1){background:linear-gradient(145deg,#102f55,#071d38);color:#fff;border-color:#102f55}
+.pillar-card:nth-child(1) .card-no{color:#a9c2dd}
+.pillar-card:nth-child(1) .pillar-icon,.pillar-card:nth-child(1)>a b{color:#b7f51c}
+.pillar-card:nth-child(1) p{color:#d0dceb}
+.pillar-card:nth-child(2){background:linear-gradient(145deg,#087eaa,#07577f);color:#fff;border-color:#087eaa}
+.pillar-card:nth-child(2) .card-no{color:#d5f2fb}
+.pillar-card:nth-child(2) .pillar-icon,.pillar-card:nth-child(2)>a b{color:#d9fbff}
+.pillar-card:nth-child(2) p{color:#e3f5fb}
+.pillar-card:nth-child(3){background:linear-gradient(145deg,#28734f,#15583e);color:#fff;border-color:#28734f}
+.pillar-card:nth-child(3) .card-no{color:#d9f1df}
+.pillar-card:nth-child(3) .pillar-icon,.pillar-card:nth-child(3)>a b{color:#c5f27b}
+.pillar-card:nth-child(3) p{color:#e4f1e8}
+.pillar-card:hover{transform:translateY(-5px);box-shadow:0 22px 46px rgba(4,25,55,.18)}
+@media(max-width:1050px){
+ .brand{min-width:220px}.brand-symbol{width:48px;height:48px}
+ .brand-copy b{font-size:18px}.brand-copy small{font-size:9px}
+}
+@media(max-width:760px){
+ .brand{gap:8px;min-width:0}.brand-symbol{width:42px;height:42px}
+ .brand-copy b{font-size:16px}.brand-copy small{font-size:8px;margin-top:3px}
+ .pillar-card{min-height:0;padding:28px 26px 24px}
+ .pillar-card p{margin-bottom:18px}
+ .pillar-card>a{padding-top:12px}
+}

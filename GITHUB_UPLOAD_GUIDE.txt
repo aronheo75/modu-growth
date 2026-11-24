@@ -1,15 +1,16 @@
-모두의 성장 2.0 | 전체 통합 업로드 안내
+모두의 성장 2.0 통합 업데이트 업로드 안내
 
-1) 먼저 현재 GitHub 저장소를 백업합니다.
+1. 기존 GitHub 저장소를 ZIP으로 백업합니다.
    https://github.com/aronheo75/modu-growth
 
-2) 아래 통합 ZIP을 PC에 내려받고 압축을 풉니다.
+2. modoo-growth-2.0-editorial-integrated.zip을 다운로드하고 압축을 풉니다.
 
-3) GitHub 저장소의 main 브랜치에서 Add file > Upload files를 선택합니다.
+3. GitHub 저장소 main 브랜치에서 Add file > Upload files를 선택합니다.
 
-4) 압축을 푼 폴더의 다음 파일 8개를 한꺼번에 업로드합니다.
+4. 압축을 푼 파일 9개를 저장소 최상위에 한꺼번에 올립니다.
    - index.html
    - style.css
+   - hero-growth-visual.png
    - app.js
    - config.js
    - config.example.js
@@ -17,16 +18,14 @@
    - GITHUB_UPLOAD_GUIDE.txt
    - supabase-schema-reference-do-not-run.sql
 
-5) 파일 교체 목록을 확인한 뒤 Commit changes를 누릅니다.
+5. 기존 파일 교체 목록을 확인하고 Commit changes를 누릅니다.
+6. GitHub Pages 배포 완료 후 https://aronheo75.github.io/modu-growth/ 에 접속합니다.
+7. Ctrl + F5로 강력 새로고침합니다.
 
-6) GitHub Pages 배포가 완료되면 아래 주소를 엽니다.
-   https://aronheo75.github.io/modu-growth/
-   Ctrl + F5로 강력 새로고침합니다.
-
-중요 사항
-- config.js에는 기존 Supabase 프로젝트 URL과 공개용 publishable/anon key가 보존되어 있습니다. 삭제하거나 임의의 값으로 바꾸지 마세요.
-- service_role/secret key는 절대 웹 파일에 넣지 마세요.
-- supabase-schema-reference-do-not-run.sql은 참고용입니다. 실행하지 마세요.
-- 기존 Supabase 프로젝트, 테이블, 회원, 자료를 삭제하거나 초기화하지 마세요.
-- 운영 배포 전에 기존 저장소 전체를 ZIP으로 백업하세요.
-- 회원가입/로그인/프로필/상품등록은 실제 Supabase 계정으로 배포 후 별도 점검이 필요합니다.
+중요
+- config.js는 기존 Supabase 프로젝트 URL과 공개용 publishable/anon key를 보존합니다. 삭제하거나 임의로 바꾸지 마세요.
+- app.js도 기존 회원 기능 코드이므로 그대로 교체하세요.
+- SQL 파일은 참고용이며 실행하지 마세요.
+- 기존 Supabase 프로젝트, 테이블, 회원 및 자료를 삭제하거나 초기화하지 마세요.
+- 운영 배포 후 실제 계정으로 로그인, 회원가입, 프로필 조회·수정, 상품 등록을 테스트해야 합니다.
+- 관리자 승인, 매칭, 거래·정산 및 자료실 권한 기능은 별도 검증·개발 대상입니다.

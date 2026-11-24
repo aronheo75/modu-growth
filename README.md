@@ -1,53 +1,35 @@
 # 모두의 성장 (ModooGrowth)
 
-기업과 영업파트너를 연결하는 동반 성장 비즈니스 플랫폼의 정적 웹사이트 및 Supabase 연동 기본 패키지입니다.
+기업과 영업파트너를 연결하는 동반 성장 비즈니스 플랫폼의 GitHub Pages 프런트엔드 및 Supabase 기본 연동 패키지입니다.
 
 ## 파일 구성
 
-- `index.html` : 메인 페이지, 회원가입/로그인 모달, 회원 대시보드
-- `style.css` : 반응형 디자인
-- `app.js` : Supabase 인증, 프로필/기업/파트너/상품 데이터 표시
-- `config.js` : Supabase URL 및 공개 anon/publishable key 설정
-- `supabase-schema.sql` : 기본 테이블, 가입 프로필 자동 생성, RLS 정책
+- `index.html` — 메인 페이지, 회원가입/로그인 모달, 회원 대시보드
+- `style.css` — 반응형 디자인
+- `app.js` — Supabase 이메일 인증, 프로필 및 목록 조회, 기업정보/상품 등록
+- `config.js` — 이 프로젝트의 Supabase Project URL 및 공개 Publishable Key
+- `config.example.js` — 다른 환경에서 사용할 설정 예시
+- `supabase-schema.sql` — 기본 테이블, 가입 프로필 자동 생성, RLS 정책 초안
 
-## 1. GitHub Pages 배포
+## GitHub Pages 업데이트
 
-1. GitHub 저장소 `modu-growth`의 `main` 브랜치 루트에 위 파일들을 업로드합니다.
-2. `index.html`, `style.css`, `app.js`는 같은 폴더(저장소 최상위)에 있어야 합니다.
-3. 저장 후 GitHub Pages 배포가 완료될 때까지 잠시 기다립니다.
-4. 브라우저에서 강력 새로고침(Windows: Ctrl+F5)을 합니다.
+1. ZIP 압축을 풉니다.
+2. GitHub 저장소 `modu-growth`의 `main` 브랜치 최상위(root)에서 `Add file` → `Upload files`를 선택합니다.
+3. 이 패키지의 파일을 업로드해 기존 파일과 교체합니다. `config.js`도 이번에 포함된 연결 설정 파일로 교체합니다.
+4. `Commit changes`를 누르고 Pages 배포가 끝날 때까지 기다립니다.
+5. 홈페이지에서 `Ctrl+F5`로 강력 새로고침합니다.
 
-## 2. Supabase 설정
+## Supabase 주의사항
 
-1. Supabase 프로젝트의 Project URL과 anon/public publishable key를 확인합니다.
-2. `config.js`의 `YOUR_...` 값을 실제 값으로 바꿉니다.
-3. Supabase SQL Editor에서 `supabase-schema.sql`을 검토한 후 실행합니다.
-4. 이메일 인증 설정에 따라 가입 후 이메일 확인이 필요할 수 있습니다.
+- `config.js`에는 Project URL과 브라우저 공개용 Publishable Key만 들어 있습니다.
+- `service_role` 또는 secret key는 절대 브라우저나 공개 GitHub 저장소에 넣지 마세요.
+- `supabase-schema.sql`은 기존 데이터베이스의 테이블/정책과 충돌할 수 있습니다. **이번 파일 교체만으로 SQL을 실행하지 마세요.** 기존 프로젝트의 현재 테이블과 RLS 정책을 확인하고 백업한 뒤 별도 검토 후 적용해야 합니다.
+- 이메일 인증이 켜져 있으면 가입 후 이메일 확인을 거쳐야 로그인할 수 있습니다.
 
-**보안 주의:** 브라우저에 공개되는 `config.js`에는 Project URL과 anon/publishable key만 넣으세요. `service_role` 또는 secret key는 절대 넣지 마세요. RLS 정책을 임의로 끄지 마세요.
+## 현재 구현 범위와 한계
 
-## 3. 관리자 계정
+현재 제공되는 기능은 이메일 회원가입/로그인, 가입 시 프로필 자동 생성(데이터베이스 트리거가 설치된 경우), 역할 표시, 기본 목록/통계 조회, 기업 프로필 및 상품 등록입니다.
 
-일반 회원가입으로 관리자 권한을 만들 수 없도록 되어 있습니다. 먼저 관리자 이메일로 회원가입한 후, SQL Editor에서 README 하단이 아니라 `supabase-schema.sql` 마지막 주석의 관리자 지정 SQL 예시를 실제 이메일로 수정해 실행하세요.
+관리자 승인·회원 검증·파트너 매칭·거래/주문·수수료/정산 기능은 아직 실제 운영 기능으로 완성되지 않았습니다. 화면의 대시보드 미리보기 수치는 사업 목표 또는 시각적 예시이며 실제 운영 실적이 아닙니다.
 
-## 4. 현재 구현 범위와 다음 개발 항목
-
-현재 기본 구현:
-- 기업/영업파트너 이메일 가입 및 로그인
-- Supabase 프로필 자동 생성
-- 회원별 역할 표시
-- 기업/파트너/상품 목록과 기본 통계 조회
-- 기업 프로필 및 상품 등록(권한 정책에 따름)
-- 관리자 메뉴의 기본 골격
-
-추가 개발 필요:
-- 가입 승인 워크플로, 기업 검증
-- 파트너 추천/매칭 로직
-- 계약, 주문, 거래, 수수료, 정산 테이블과 화면
-- 관리자 전용 승인/운영 기능
-- 약관/개인정보 처리방침, 이메일/SMS 인증 정책
-- 운영 전 보안 점검 및 테스트
-
-## 5. 기존 Supabase 프로젝트 사용 시 주의
-
-기존 프로젝트에 데이터가 있다면 `supabase-schema.sql`을 무검토로 실행하지 마세요. 현재 테이블/정책과 충돌할 수 있으므로 먼저 백업하고 기존 스키마를 비교해야 합니다.
+운영 전에는 RLS 정책, 개인정보 노출 범위, 관리자 권한 부여, 이메일 인증 리디렉션 URL을 별도로 점검해야 합니다.

@@ -199,3 +199,33 @@ button,input,textarea,select{font-family:inherit}
  .pillar-card p{margin-bottom:18px}
  .pillar-card>a{padding-top:12px}
 }
+
+
+/* 2.2 Company dashboard & private document library */
+.library-intro{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.8}
+.library-private-note{font-size:11px;color:#52677f;background:#f1f5f9;border-radius:99px;padding:8px 12px;white-space:nowrap}
+.document-upload-form{margin-top:22px;padding:22px;border:1px solid var(--line);border-radius:16px;background:#f8fbfe}
+.document-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.document-form-grid label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:800;color:#40536c}
+.document-form-grid input,.document-form-grid select,.document-form-grid textarea{width:100%;border:1px solid #d7e1ec;border-radius:10px;background:#fff;padding:12px 13px;color:var(--ink);font:inherit;font-size:13px;min-width:0}
+.document-form-grid input[type=file]{padding:10px;background:#fff}
+.document-form-grid label small{font-size:10px;color:#7b8ba0;font-weight:500}
+.document-wide{grid-column:1/-1}
+.document-form-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:17px}
+.document-form-actions p{margin:0;color:#718198;font-size:11px;line-height:1.7;max-width:560px}
+.library-list-heading{display:flex;align-items:center;justify-content:space-between;margin:28px 0 12px}
+.library-list-heading h4{margin:0;font-size:16px}
+.document-list{display:grid;gap:10px}
+.document-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:13px;padding:15px 17px;background:#fff}
+.document-row h5{font-size:14px;margin:0 0 5px;overflow-wrap:anywhere}
+.document-row p{font-size:11px;color:var(--muted);margin:0;line-height:1.7;overflow-wrap:anywhere}
+.document-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.document-tag{display:inline-flex;border-radius:99px;background:#eef4f9;color:#53677f;padding:3px 8px;font-size:10px;font-weight:700}
+.document-tag.published{background:#e8f6ed;color:#247348}
+.document-tag.partners{background:#e8f4ff;color:#1767a4}
+.document-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.document-actions button{border:1px solid #d8e2ec;border-radius:8px;background:#fff;padding:7px 10px;color:#31465f;font-size:11px;font-weight:700}
+.document-actions button.delete{color:#a33b3b;border-color:#efd5d5}
+.document-empty{padding:28px;border:1px dashed #cbd8e6;border-radius:13px;text-align:center;color:#78899e;font-size:13px;background:#fbfdff}
+#companyDocsStat[hidden],#companyLibraryMenu[hidden]{display:none!important}
+@media(max-width:760px){.document-form-grid{grid-template-columns:1fr}.document-wide{grid-column:auto}.document-form-actions{align-items:stretch;flex-direction:column}.document-row{grid-template-columns:1fr}.document-actions{justify-content:flex-start}.library-private-note{white-space:normal}.panel-title{align-items:flex-start;gap:12px}}

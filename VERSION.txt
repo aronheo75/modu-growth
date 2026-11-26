@@ -1,3 +1,3 @@
-MODOO GROWTH 2.4 FULL INTEGRATED
-기업회원 사업자정보 + 상품·서비스 등록 개선 통합본
-기준: 실제 적용된 2.3 기업회원 기본정보 관리 및 2.4 상품등록 확장
+MODOO GROWTH VERSION 2.5
+Integrated company workspace, product registration, and administrator product review.
+Existing Supabase auth, profiles, offers rows, and config.js are preserved.

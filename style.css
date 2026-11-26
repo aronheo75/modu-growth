@@ -249,3 +249,9 @@ button,input,textarea,select{font-family:inherit}
 .modal-box form .form-help-note{margin:2px 0 4px;padding:12px 14px;border-radius:10px;background:#f2f6fa;color:#63758b;font-size:11px;line-height:1.75}
 .offer-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .offer-status{display:inline-flex;flex-shrink:0;border-radius:99px;background:#edf3f8;color:#4b6179;padding:4px 9px;font-size:10px;font-weight:800}
+
+/* 2.5 administrator product review */
+.admin-review-note{margin:14px 0 20px;padding:14px 16px;border:1px solid #dce7f4;border-radius:12px;background:#f5f8fc;color:#526783;font-size:13px;line-height:1.7}
+.admin-offer-card{display:flex;flex-direction:column;gap:9px}
+.admin-offer-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.admin-offer-actions .btn{min-height:38px}

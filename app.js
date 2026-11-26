@@ -31,7 +31,7 @@
     const {data,error}=await sb.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();if(error){console.error(error);return toast("회원 프로필을 불러오지 못했습니다. 기존 데이터베이스 정책을 확인해 주세요.");}profile=data;if(!profile)return toast("회원 프로필이 아직 생성되지 않았습니다. 관리자에게 문의해 주세요.");
     $("#authArea")?.classList.add("hidden");$("#dashboard")?.classList.remove("hidden");$("#welcome").textContent=`${profile.display_name||"회원"}님, 환영합니다!`;const roles={company:"기업회원",partner:"비즈니스파트너",admin:"운영 관리자"};$("#roleText").textContent=roles[profile.role]||"회원";$("#memberRole").textContent=roles[profile.role]||"회원";$("#adminMenu").hidden=profile.role!=="admin";$("#addOfferButton").hidden=profile.role!=="company"&&profile.role!=="admin";$("#companyLibraryMenu").hidden=profile.role!=="company"&&profile.role!=="admin";$("#companyDocsStat").hidden=profile.role!=="company"&&profile.role!=="admin";showTab("overview");renderProfile();await refreshOffers();if(profile.role==="company"||profile.role==="admin")await refreshCompanyDocuments();$("#dashboard").scrollIntoView({behavior:"smooth",block:"start"});
   }
-  function showTab(name){$$(".tab-panel").forEach(x=>x.classList.add("hidden"));$("#tab-"+name)?.classList.remove("hidden");$$(".workspace-tab").forEach(b=>b.classList.toggle("active",b.getAttribute("onclick")?.includes(`'${name}'`)));}
+  function showTab(name){$$(".tab-panel").forEach(x=>x.classList.add("hidden"));$("#tab-"+name)?.classList.remove("hidden");$$(".workspace-tab").forEach(b=>b.classList.toggle("active",b.getAttribute("onclick")?.includes(`'${name}'`)));if(name==="admin")refreshAdminOffers();if(name==="offers")refreshOffers();}
   function renderProfile(){
     if(!profile)return;
     const company=profile.role==="company"||profile.role==="admin";
@@ -47,12 +47,7 @@
     if(!sb||!profile)return;
     let q=sb.from("offers").select("id,title,description,category,status,revenue_model,price_type,price_amount,target_customers,supply_regions,key_strength,created_at").order("created_at",{ascending:false}).limit(30);
     if(profile.role==="company")q=q.eq("owner_id",currentUser.id);
-    else if(profile.role!=="admin"){
-      $("#offersList").innerHTML='<p class="data-panel">비즈니스파트너의 상품 탐색 권한은 운영 정책 설정 후 연결됩니다.</p>';
-      $("#offerCount").textContent="—";
-      $("#recentActivity").textContent="회원 프로필이 정상적으로 연결되었습니다.";
-      return;
-    }
+    else if(profile.role==="partner")q=q.eq("status","active");
     const {data,error}=await q;
     if(error){
       console.warn(error);
@@ -68,7 +63,35 @@
       const price=x.price_type==="fixed"&&x.price_amount!==null?`${Number(x.price_amount).toLocaleString("ko-KR")}원`:(x.price_type==="quote"?"별도 견적":"가격 미입력");
       return `<article class="data-card"><div class="offer-card-top"><h4>${escapeHtml(x.title)}</h4><span class="offer-status">${escapeHtml(statusLabels[x.status]||x.status||"검토 대기")}</span></div><p>${escapeHtml(x.description||"")}</p><p>${escapeHtml(x.category||"기타")} · ${escapeHtml(revenueLabels[x.revenue_model]||"수익모델 미선택")} · ${escapeHtml(price)}</p>${x.target_customers?`<p>주요 고객: ${escapeHtml(x.target_customers)}</p>`:""}${x.supply_regions?`<p>공급 지역: ${escapeHtml(x.supply_regions)}</p>`:""}${x.key_strength?`<p>핵심 경쟁력: ${escapeHtml(x.key_strength)}</p>`:""}</article>`;
     }).join("")||'<p class="data-panel">등록된 상품·서비스가 없습니다. 첫 상품을 등록해 보세요.</p>';
-    $("#recentActivity").textContent=`내 계정으로 등록된 상품·서비스 ${items.length}건을 확인했습니다.`;
+    $("#recentActivity").textContent=profile.role==="partner"?`현재 영업 가능한 승인 상품 ${items.length}건을 확인했습니다.`:`내 계정으로 등록된 상품·서비스 ${items.length}건을 확인했습니다.`;
+  }
+  async function refreshAdminOffers(){
+    if(!sb||profile?.role!=="admin")return;
+    const list=$("#adminOffersList");
+    if(!list)return;
+    list.innerHTML='<p class="data-panel">상품 목록을 불러오는 중입니다.</p>';
+    const {data,error}=await sb.from("offers").select("id,owner_id,title,description,category,status,revenue_model,price_type,price_amount,target_customers,supply_regions,key_strength,created_at").order("created_at",{ascending:false}).limit(100);
+    if(error){console.error(error);list.innerHTML=`<p class="data-panel">상품 목록을 불러오지 못했습니다: ${escapeHtml(error.message)}</p>`;return;}
+    const items=data||[];
+    const ownerIds=[...new Set(items.map(x=>x.owner_id).filter(Boolean))];
+    let owners={};
+    if(ownerIds.length){const result=await sb.from("profiles").select("id,display_name,company_name").in("id",ownerIds);if(!result.error)owners=Object.fromEntries((result.data||[]).map(x=>[x.id,x]));}
+    const statusLabels={pending:"검토 대기",active:"승인 완료",paused:"판매 보류",rejected:"반려"};
+    const revenueLabels={one_time:"일회성 판매",recurring:"정기·반복 매출",mixed:"최초 계약 + 유지관리"};
+    list.innerHTML=items.map(x=>{
+      const owner=owners[x.owner_id]||{};
+      const price=x.price_type==="fixed"&&x.price_amount!==null?`${Number(x.price_amount).toLocaleString("ko-KR")}원`:(x.price_type==="quote"?"별도 견적":"가격 미입력");
+      return `<article class="data-card admin-offer-card"><div class="offer-card-top"><h4>${escapeHtml(x.title)}</h4><span class="offer-status">${escapeHtml(statusLabels[x.status]||x.status||"검토 대기")}</span></div><p><strong>등록 기업:</strong> ${escapeHtml(owner.company_name||owner.display_name||"기업 정보 미등록")}</p><p>${escapeHtml(x.category||"기타")} · ${escapeHtml(revenueLabels[x.revenue_model]||"수익모델 미선택")} · ${escapeHtml(price)}</p><p>${escapeHtml(x.description||"")}</p>${x.target_customers?`<p>주요 고객: ${escapeHtml(x.target_customers)}</p>`:""}${x.supply_regions?`<p>공급 지역: ${escapeHtml(x.supply_regions)}</p>`:""}${x.key_strength?`<p>핵심 경쟁력: ${escapeHtml(x.key_strength)}</p>`:""}<div class="admin-offer-actions"><button type="button" class="btn btn-primary btn-sm" data-offer-status="active" data-offer-id="${escapeHtml(x.id)}">승인 및 공개</button><button type="button" class="btn btn-outline-dark btn-sm" data-offer-status="rejected" data-offer-id="${escapeHtml(x.id)}">반려</button><button type="button" class="btn btn-outline-dark btn-sm" data-offer-status="paused" data-offer-id="${escapeHtml(x.id)}">판매 보류</button></div></article>`;
+    }).join("")||'<p class="data-panel">등록된 상품·서비스가 없습니다.</p>';
+    list.querySelectorAll("[data-offer-status]").forEach(button=>button.addEventListener("click",()=>updateOfferStatus(button.dataset.offerId,button.dataset.offerStatus)));
+  }
+  async function updateOfferStatus(id,status){
+    if(profile?.role!=="admin")return toast("관리자만 상품 승인 상태를 변경할 수 있습니다.");
+    const labels={active:"승인 및 공개",rejected:"반려",paused:"판매 보류"};
+    if(!confirm(`이 상품을 '${labels[status]}' 처리할까요?`))return;
+    const {error}=await sb.from("offers").update({status}).eq("id",id);
+    if(error){console.error(error);return toast(error.message||"상품 상태 변경에 실패했습니다.");}
+    toast(`상품이 ${labels[status]} 처리되었습니다.`);await refreshAdminOffers();await refreshOffers();
   }
   function openProfileForm(){
     if(!currentUser||!profile)return openAuth("login");
@@ -210,7 +233,7 @@
     const {error:rowError}=await sb.from("company_documents").delete().eq("id",id);if(rowError)return toast("파일은 삭제했지만 자료 목록 정리에 실패했습니다. 관리자에게 문의해 주세요.");
     toast("자료가 삭제되었습니다.");await refreshCompanyDocuments();
   }
-  function bindUI(){$("#companyDocumentForm")?.addEventListener("submit",handleCompanyDocumentUpload);$("#refreshDocumentsButton")?.addEventListener("click",refreshCompanyDocuments);$$('[data-open-auth]').forEach(b=>b.addEventListener("click",()=>openAuth(b.dataset.openAuth,b.dataset.signupRole||"")));$$("[data-close-modal]").forEach(x=>x.addEventListener("click",closeModal));$("#mobileNavToggle")?.addEventListener("click",()=>{const nav=$("#mainNav"),open=nav.classList.toggle("open");$("#mobileNavToggle").setAttribute("aria-expanded",String(open));});$$("#mainNav a").forEach(a=>a.addEventListener("click",()=>$("#mainNav")?.classList.remove("open")));document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});}
+  function bindUI(){$("#companyDocumentForm")?.addEventListener("submit",handleCompanyDocumentUpload);$("#refreshDocumentsButton")?.addEventListener("click",refreshCompanyDocuments);$("#refreshAdminOffersButton")?.addEventListener("click",refreshAdminOffers);$$('[data-open-auth]').forEach(b=>b.addEventListener("click",()=>openAuth(b.dataset.openAuth,b.dataset.signupRole||"")));$$("[data-close-modal]").forEach(x=>x.addEventListener("click",closeModal));$("#mobileNavToggle")?.addEventListener("click",()=>{const nav=$("#mainNav"),open=nav.classList.toggle("open");$("#mobileNavToggle").setAttribute("aria-expanded",String(open));});$$("#mainNav a").forEach(a=>a.addEventListener("click",()=>$("#mainNav")?.classList.remove("open")));document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});}
   window.openAuth=openAuth;window.closeModal=closeModal;window.logout=logout;window.showTab=showTab;window.openProfileForm=openProfileForm;window.openOfferForm=openOfferForm;
   document.addEventListener("DOMContentLoaded",()=>{bindUI();if(initClient()){sb.auth.onAuthStateChange(()=>{setTimeout(loadSession,0);});loadSession();}else console.info("공개 페이지는 사용 가능하며 회원 기능은 Supabase 설정 후 활성화됩니다.");});
 })();

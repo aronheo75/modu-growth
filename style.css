@@ -255,3 +255,13 @@ button,input,textarea,select{font-family:inherit}
 .admin-offer-card{display:flex;flex-direction:column;gap:9px}
 .admin-offer-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .admin-offer-actions .btn{min-height:38px}
+
+/* 3.0 integrated workspace additions */
+#tab-agreements h4,#tab-partner-hub h4,#tab-admin-operations h4{margin:28px 0 12px;color:var(--navy,#102c4d)}
+#tab-partner-hub .live-stats{margin:18px 0 24px}
+#tab-admin-operations .data-card,#tab-agreements .data-card,#tab-partner-hub .data-card{margin-bottom:14px}
+#tab-admin-operations .document-form-grid{margin:14px 0}
+#tab-admin-operations .document-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#tab-admin-operations .document-actions button{cursor:pointer}
+#tab-partner-hub .data-card button{margin-top:10px}
+#tab-partner-hub form{margin:18px 0 26px}

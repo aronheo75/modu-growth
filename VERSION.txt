@@ -1,3 +1,2 @@
-MODOO GROWTH VERSION 2.5
-Integrated company workspace, product registration, and administrator product review.
-Existing Supabase auth, profiles, offers rows, and config.js are preserved.
+MODOO GROWTH VERSION 3.0.0
+Complete integrated GitHub upload bundle.

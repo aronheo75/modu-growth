@@ -243,3 +243,9 @@ button,input,textarea,select{font-family:inherit}
 .modal-field small{font-size:10px;color:#8291a4;font-weight:500}
 .modal-field[hidden]{display:none!important}
 @media(max-width:760px){.profile-summary-grid{grid-template-columns:1fr}.modal-box:has(.form-section-title){padding:26px 18px}}
+
+/* 2.4 product registration: compact guided form */
+.modal-box:has(#revenueModel){width:min(620px,100%);max-height:min(90vh,920px);overflow:auto}
+.modal-box form .form-help-note{margin:2px 0 4px;padding:12px 14px;border-radius:10px;background:#f2f6fa;color:#63758b;font-size:11px;line-height:1.75}
+.offer-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.offer-status{display:inline-flex;flex-shrink:0;border-radius:99px;background:#edf3f8;color:#4b6179;padding:4px 9px;font-size:10px;font-weight:800}

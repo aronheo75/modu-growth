@@ -47,6 +47,3 @@ comment on column public.profiles.corporation_registration_number is '법인등�
 comment on column public.profiles.website_url is '기업 공식 홈페이지 URL';
 
 -- 기존 RLS 정책은 유지합니다. 이 파일은 컬럼과 제약조건만 추가하며 정책을 완화하지 않습니다.
-create unique index if not exists profiles_business_registration_number_uidx
-  on public.profiles (business_registration_number)
-  where business_registration_number is not null;

@@ -43,8 +43,32 @@
     const html=rows.map(([label,value])=>`<div class="profile-field"><small>${label}</small><div>${value&&String(value).trim()? (label==="회사 홈페이지"?value:escapeHtml(value)):"미등록"}</div></div>`).join("");
     $("#profileSummary").innerHTML=`<div class="profile-summary-grid">${html}<div class="profile-field"><small>로그인 이메일</small><div>${escapeHtml(currentUser?.email||"")}</div></div></div><p class="profile-note">사업자등록번호 등 주요 사업자 정보는 플랫폼 협약 및 기업 확인을 위해 사용됩니다. 사업자등록증 확인 절차는 관리자 기능과 연동할 예정입니다.</p>`;
   }
-  async function refreshOffers(){if(!sb||!profile)return;let q=sb.from("offers").select("id,title,description,category,status,created_at").order("created_at",{ascending:false}).limit(30);if(profile.role==="company")q=q.eq("owner_id",currentUser.id);else if(profile.role!=="admin"){ $("#offersList").innerHTML='<p class="data-panel">비즈니스파트너의 상품 탐색 권한은 운영 정책 설정 후 연결됩니다.</p>';$("#offerCount").textContent="—";$("#recentActivity").textContent="회원 프로필이 정상적으로 연결되었습니다.";return;}
-    const {data,error}=await q;if(error){console.warn(error);$("#offersList").innerHTML='<p class="data-panel">상품 정보를 불러오지 못했습니다. 테이블 및 접근 정책을 확인해 주세요.</p>';$("#offerCount").textContent="—";return;}const items=data||[];$("#offerCount").textContent=items.length;$("#offersList").innerHTML=items.map(x=>`<article class="data-card"><h4>${escapeHtml(x.title)}</h4><p>${escapeHtml(x.description||"")}</p><p>${escapeHtml(x.category||"기타")} · ${escapeHtml(x.status||"pending")}</p></article>`).join("")||'<p class="data-panel">등록된 상품·서비스가 없습니다.</p>';$("#recentActivity").textContent=`내 계정으로 등록된 상품·서비스 ${items.length}건을 확인했습니다.`;
+  async function refreshOffers(){
+    if(!sb||!profile)return;
+    let q=sb.from("offers").select("id,title,description,category,status,revenue_model,price_type,price_amount,target_customers,supply_regions,key_strength,created_at").order("created_at",{ascending:false}).limit(30);
+    if(profile.role==="company")q=q.eq("owner_id",currentUser.id);
+    else if(profile.role!=="admin"){
+      $("#offersList").innerHTML='<p class="data-panel">비즈니스파트너의 상품 탐색 권한은 운영 정책 설정 후 연결됩니다.</p>';
+      $("#offerCount").textContent="—";
+      $("#recentActivity").textContent="회원 프로필이 정상적으로 연결되었습니다.";
+      return;
+    }
+    const {data,error}=await q;
+    if(error){
+      console.warn(error);
+      $("#offersList").innerHTML='<p class="data-panel">상품 정보를 불러오지 못했습니다. 상품 등록 추가 SQL 적용 여부를 확인해 주세요.</p>';
+      $("#offerCount").textContent="—";
+      return;
+    }
+    const items=data||[];
+    const revenueLabels={one_time:"일회성 판매",recurring:"정기·반복 매출",mixed:"최초 계약 + 유지관리"};
+    const statusLabels={pending:"관리자 검토 대기",active:"승인 완료",paused:"판매 보류",rejected:"승인 반려"};
+    $("#offerCount").textContent=items.length;
+    $("#offersList").innerHTML=items.map(x=>{
+      const price=x.price_type==="fixed"&&x.price_amount!==null?`${Number(x.price_amount).toLocaleString("ko-KR")}원`:(x.price_type==="quote"?"별도 견적":"가격 미입력");
+      return `<article class="data-card"><div class="offer-card-top"><h4>${escapeHtml(x.title)}</h4><span class="offer-status">${escapeHtml(statusLabels[x.status]||x.status||"검토 대기")}</span></div><p>${escapeHtml(x.description||"")}</p><p>${escapeHtml(x.category||"기타")} · ${escapeHtml(revenueLabels[x.revenue_model]||"수익모델 미선택")} · ${escapeHtml(price)}</p>${x.target_customers?`<p>주요 고객: ${escapeHtml(x.target_customers)}</p>`:""}${x.supply_regions?`<p>공급 지역: ${escapeHtml(x.supply_regions)}</p>`:""}${x.key_strength?`<p>핵심 경쟁력: ${escapeHtml(x.key_strength)}</p>`:""}</article>`;
+    }).join("")||'<p class="data-panel">등록된 상품·서비스가 없습니다. 첫 상품을 등록해 보세요.</p>';
+    $("#recentActivity").textContent=`내 계정으로 등록된 상품·서비스 ${items.length}건을 확인했습니다.`;
   }
   function openProfileForm(){
     if(!currentUser||!profile)return openAuth("login");
@@ -93,7 +117,50 @@
     };
     $("#modal").classList.remove("hidden");
   }
-  function openOfferForm(){if(!currentUser)return openAuth("login");if(!["company","admin"].includes(profile?.role))return toast("기업회원만 상품·서비스를 등록할 수 있습니다.");$("#modalTitle").textContent="상품·서비스 등록";$("#authForm").innerHTML=`<input id="offerTitle" placeholder="상품 또는 서비스명" required><input id="category" placeholder="카테고리"><textarea id="description" rows="4" placeholder="상품·서비스 소개"></textarea><button type="submit">등록하기</button>`;$("#authForm").onsubmit=async e=>{e.preventDefault();const {error}=await sb.from("offers").insert({owner_id:currentUser.id,title:$("#offerTitle").value.trim(),category:$("#category").value.trim(),description:$("#description").value.trim()});if(error)return toast(error.message);closeModal();toast("상품·서비스가 등록되었습니다.");await refreshOffers();};$("#modal").classList.remove("hidden");}
+  function openOfferForm(){
+    if(!currentUser)return openAuth("login");
+    if(!["company","admin"].includes(profile?.role))return toast("기업회원만 상품·서비스를 등록할 수 있습니다.");
+    $("#modalTitle").textContent="상품·서비스 등록";
+    $("#authForm").innerHTML=`
+      <div class="form-section-title">기본 정보</div>
+      <label class="modal-field">상품 또는 서비스명 <input id="offerTitle" maxlength="140" placeholder="예: 공기열 히트펌프" required></label>
+      <label class="modal-field">카테고리 <input id="category" maxlength="80" placeholder="예: 에너지·환경 설비"></label>
+      <label class="modal-field">상품·서비스 소개 <textarea id="description" rows="3" maxlength="2000" placeholder="주요 기능과 고객에게 제공하는 가치를 간단히 소개해 주세요." required></textarea></label>
+      <div class="form-section-title">판매 정보</div>
+      <label class="modal-field">수익 모델 <select id="revenueModel"><option value="one_time">일회성 판매</option><option value="recurring">정기·반복 매출</option><option value="mixed">최초 계약 + 유지관리 반복 매출</option></select></label>
+      <label class="modal-field">가격 방식 <select id="priceType"><option value="quote">별도 견적</option><option value="fixed">판매가격 입력</option></select></label>
+      <label class="modal-field" id="offerPriceField" hidden>판매가격(원) <input id="priceAmount" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 1500000"></label>
+      <label class="modal-field">주요 고객층 <input id="targetCustomers" maxlength="300" placeholder="예: 공공기관, 학교, 제조기업"></label>
+      <label class="modal-field">공급 가능 지역 <input id="supplyRegions" maxlength="300" placeholder="예: 전국 / 충청권"></label>
+      <label class="modal-field">핵심 경쟁력 <textarea id="keyStrength" rows="2" maxlength="1000" placeholder="제품의 차별점이나 주요 장점을 입력해 주세요."></textarea></label>
+      <p class="form-help-note">등록한 상품은 바로 공개되지 않습니다. 플랫폼 관리자가 상품과 협약조건을 검토한 뒤 승인하면 비즈니스파트너에게 공개됩니다. 수수료와 협약조건은 별도 메뉴에서 신청합니다.</p>
+      <button type="submit">상품 등록 신청</button>`;
+    const priceType=$("#priceType"),priceField=$("#offerPriceField");
+    const syncPrice=()=>{priceField.hidden=priceType.value!=="fixed";$("#priceAmount").required=priceType.value==="fixed";};
+    priceType.addEventListener("change",syncPrice);syncPrice();
+    $("#authForm").onsubmit=async e=>{
+      e.preventDefault();
+      const priceAmount=$("#priceAmount").value.trim();
+      if(priceType.value==="fixed"&&(!priceAmount||Number(priceAmount)<0))return toast("판매가격을 0 이상의 숫자로 입력해 주세요.");
+      const payload={
+        owner_id:currentUser.id,
+        title:$("#offerTitle").value.trim(),
+        category:$("#category").value.trim()||null,
+        description:$("#description").value.trim(),
+        revenue_model:$("#revenueModel").value,
+        price_type:priceType.value,
+        price_amount:priceType.value==="fixed"?Number(priceAmount):null,
+        target_customers:$("#targetCustomers").value.trim()||null,
+        supply_regions:$("#supplyRegions").value.trim()||null,
+        key_strength:$("#keyStrength").value.trim()||null
+      };
+      const submit=$("#authForm button[type=submit]");submit.disabled=true;submit.textContent="등록 중...";
+      const {error}=await sb.from("offers").insert(payload);
+      if(error){console.error(error);submit.disabled=false;submit.textContent="상품 등록 신청";return toast(error.message.includes("column")?"상품 등록용 추가 SQL을 먼저 적용해 주세요.":error.message);}
+      closeModal();toast("상품 등록 신청이 완료되었습니다. 관리자 검토 후 공개됩니다.");await refreshOffers();
+    };
+    $("#modal").classList.remove("hidden");
+  }
   function formatBytes(bytes){if(!Number.isFinite(Number(bytes)))return "용량 정보 없음";const units=["B","KB","MB","GB"];let n=Number(bytes),i=0;while(n>=1024&&i<units.length-1){n/=1024;i++;}return `${n.toFixed(i?1:0)} ${units[i]}`;}
   function safeFileName(name){return String(name||"file").normalize("NFKC").replace(/[^\w가-힣.\-]+/g,"_").replace(/^\.+/,"").slice(-100)||"file";}
   async function refreshCompanyDocuments(){

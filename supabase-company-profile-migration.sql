@@ -35,9 +35,11 @@ alter table public.profiles
   check (corporation_registration_number is null or corporation_registration_number ~ '^[0-9]{13}$');
 
 -- 동일 사업자번호로 여러 기업 계정이 중복 등록되는 것을 방지합니다.
-create unique index if not exists profiles_business_registration_number_uidx
-  on public.profiles (business_registration_number)
-  where business_registration_number is not null;
+CREATE UNIQUE INDEX IF NOT EXISTS
+  profiles_business_registration_number_uidx
+ON public.profiles (business_registration_number)
+WHERE role = 'company'
+  AND business_registration_number IS NOT NULL;
 
 comment on column public.profiles.business_type is '사업자 유형: corporation(법인), sole_proprietor(개인사업자)';
 comment on column public.profiles.business_registration_number is '사업자등록번호 10자리 숫자';
@@ -45,3 +47,6 @@ comment on column public.profiles.corporation_registration_number is '법인등�
 comment on column public.profiles.website_url is '기업 공식 홈페이지 URL';
 
 -- 기존 RLS 정책은 유지합니다. 이 파일은 컬럼과 제약조건만 추가하며 정책을 완화하지 않습니다.
+create unique index if not exists profiles_business_registration_number_uidx
+  on public.profiles (business_registration_number)
+  where business_registration_number is not null;

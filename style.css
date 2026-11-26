@@ -229,3 +229,17 @@ button,input,textarea,select{font-family:inherit}
 .document-empty{padding:28px;border:1px dashed #cbd8e6;border-radius:13px;text-align:center;color:#78899e;font-size:13px;background:#fbfdff}
 #companyDocsStat[hidden],#companyLibraryMenu[hidden]{display:none!important}
 @media(max-width:760px){.document-form-grid{grid-template-columns:1fr}.document-wide{grid-column:auto}.document-form-actions{align-items:stretch;flex-direction:column}.document-row{grid-template-columns:1fr}.document-actions{justify-content:flex-start}.library-private-note{white-space:normal}.panel-title{align-items:flex-start;gap:12px}}
+
+/* 2.3 Company identity profile */
+.profile-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 22px}
+.profile-field{padding:13px 2px;border-bottom:1px solid #e8edf3;min-width:0}
+.profile-field small{display:block;color:#7b8ba0;font-size:11px;font-weight:800;margin-bottom:5px}
+.profile-field div{color:#243b56;font-size:13px;overflow-wrap:anywhere;white-space:pre-wrap}
+.profile-field a{color:#087fc0;text-decoration:underline}
+.profile-note{font-size:11px;color:#74849a;line-height:1.8;margin:18px 0 0}
+.modal-box:has(.form-section-title){width:min(620px,100%);max-height:min(88vh,900px);overflow:auto}
+.modal-box form .form-section-title{font-size:13px;font-weight:900;color:#0b315b;border-bottom:1px solid #dfe7ef;padding:12px 0 7px;margin-top:5px}
+.modal-field{display:flex;flex-direction:column;gap:5px;color:#40536c;font-size:11px;font-weight:800}
+.modal-field small{font-size:10px;color:#8291a4;font-weight:500}
+.modal-field[hidden]{display:none!important}
+@media(max-width:760px){.profile-summary-grid{grid-template-columns:1fr}.modal-box:has(.form-section-title){padding:26px 18px}}

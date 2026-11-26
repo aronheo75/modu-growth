@@ -28,15 +28,71 @@
   function closeModal(){$("#modal")?.classList.add("hidden");}
   async function logout(){if(sb){const {error}=await sb.auth.signOut();if(error)return toast(error.message);}currentUser=null;profile=null;$("#dashboard")?.classList.add("hidden");$("#authArea")?.classList.remove("hidden");toast("로그아웃되었습니다.");window.scrollTo({top:0,behavior:"smooth"});}
   async function loadSession(){if(!sb)return;const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError)return toast(sessionError.message);if(!session){currentUser=null;profile=null;$("#dashboard")?.classList.add("hidden");$("#authArea")?.classList.remove("hidden");return;}currentUser=session.user;
-    const {data,error}=await sb.from("profiles").select("id,display_name,role,company_name,phone,bio").eq("id",currentUser.id).maybeSingle();if(error){console.error(error);return toast("회원 프로필을 불러오지 못했습니다. 기존 데이터베이스 정책을 확인해 주세요.");}profile=data;if(!profile)return toast("회원 프로필이 아직 생성되지 않았습니다. 관리자에게 문의해 주세요.");
+    const {data,error}=await sb.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();if(error){console.error(error);return toast("회원 프로필을 불러오지 못했습니다. 기존 데이터베이스 정책을 확인해 주세요.");}profile=data;if(!profile)return toast("회원 프로필이 아직 생성되지 않았습니다. 관리자에게 문의해 주세요.");
     $("#authArea")?.classList.add("hidden");$("#dashboard")?.classList.remove("hidden");$("#welcome").textContent=`${profile.display_name||"회원"}님, 환영합니다!`;const roles={company:"기업회원",partner:"비즈니스파트너",admin:"운영 관리자"};$("#roleText").textContent=roles[profile.role]||"회원";$("#memberRole").textContent=roles[profile.role]||"회원";$("#adminMenu").hidden=profile.role!=="admin";$("#addOfferButton").hidden=profile.role!=="company"&&profile.role!=="admin";$("#companyLibraryMenu").hidden=profile.role!=="company"&&profile.role!=="admin";$("#companyDocsStat").hidden=profile.role!=="company"&&profile.role!=="admin";showTab("overview");renderProfile();await refreshOffers();if(profile.role==="company"||profile.role==="admin")await refreshCompanyDocuments();$("#dashboard").scrollIntoView({behavior:"smooth",block:"start"});
   }
   function showTab(name){$$(".tab-panel").forEach(x=>x.classList.add("hidden"));$("#tab-"+name)?.classList.remove("hidden");$$(".workspace-tab").forEach(b=>b.classList.toggle("active",b.getAttribute("onclick")?.includes(`'${name}'`)));}
-  function renderProfile(){if(!profile)return;$("#profileSummary").innerHTML=`<p><b>이름</b>　${escapeHtml(profile.display_name||"미등록")}</p><p><b>회사명</b>　${escapeHtml(profile.company_name||"미등록")}</p><p><b>연락처</b>　${escapeHtml(profile.phone||"미등록")}</p><p><b>소개</b>　${escapeHtml(profile.bio||"소개가 등록되지 않았습니다.")}</p><p><b>이메일</b>　${escapeHtml(currentUser?.email||"")}</p>`;}
+  function renderProfile(){
+    if(!profile)return;
+    const company=profile.role==="company"||profile.role==="admin";
+    const typeLabel=profile.business_type==="corporation"?"법인사업자":profile.business_type==="sole_proprietor"?"개인사업자":"미선택";
+    const website=profile.website_url?`<a href="${escapeHtml(profile.website_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.website_url)}</a>`:"미등록";
+    const rows=company?[
+      ["사업자 유형",typeLabel],["상호·법인명",profile.company_name],["사업자등록번호",profile.business_registration_number],["법인등록번호",profile.corporation_registration_number],["대표자명",profile.representative_name],["개업연월일",profile.opening_date],["업태",profile.business_type_detail],["종목",profile.business_item],["사업장 주소",profile.business_address],["회사 홈페이지",website],["공식 이메일",profile.official_email],["회사 전화번호",profile.company_phone],["담당자명",profile.display_name],["담당자 연락처",profile.phone],["회사 소개",profile.bio]
+    ]:[ ["이름",profile.display_name],["연락처",profile.phone],["소개",profile.bio] ];
+    const html=rows.map(([label,value])=>`<div class="profile-field"><small>${label}</small><div>${value&&String(value).trim()? (label==="회사 홈페이지"?value:escapeHtml(value)):"미등록"}</div></div>`).join("");
+    $("#profileSummary").innerHTML=`<div class="profile-summary-grid">${html}<div class="profile-field"><small>로그인 이메일</small><div>${escapeHtml(currentUser?.email||"")}</div></div></div><p class="profile-note">사업자등록번호 등 주요 사업자 정보는 플랫폼 협약 및 기업 확인을 위해 사용됩니다. 사업자등록증 확인 절차는 관리자 기능과 연동할 예정입니다.</p>`;
+  }
   async function refreshOffers(){if(!sb||!profile)return;let q=sb.from("offers").select("id,title,description,category,status,created_at").order("created_at",{ascending:false}).limit(30);if(profile.role==="company")q=q.eq("owner_id",currentUser.id);else if(profile.role!=="admin"){ $("#offersList").innerHTML='<p class="data-panel">비즈니스파트너의 상품 탐색 권한은 운영 정책 설정 후 연결됩니다.</p>';$("#offerCount").textContent="—";$("#recentActivity").textContent="회원 프로필이 정상적으로 연결되었습니다.";return;}
     const {data,error}=await q;if(error){console.warn(error);$("#offersList").innerHTML='<p class="data-panel">상품 정보를 불러오지 못했습니다. 테이블 및 접근 정책을 확인해 주세요.</p>';$("#offerCount").textContent="—";return;}const items=data||[];$("#offerCount").textContent=items.length;$("#offersList").innerHTML=items.map(x=>`<article class="data-card"><h4>${escapeHtml(x.title)}</h4><p>${escapeHtml(x.description||"")}</p><p>${escapeHtml(x.category||"기타")} · ${escapeHtml(x.status||"pending")}</p></article>`).join("")||'<p class="data-panel">등록된 상품·서비스가 없습니다.</p>';$("#recentActivity").textContent=`내 계정으로 등록된 상품·서비스 ${items.length}건을 확인했습니다.`;
   }
-  function openProfileForm(){if(!currentUser||!profile)return openAuth("login");$("#modalTitle").textContent="내 정보 수정";$("#authForm").innerHTML=`<input id="editName" placeholder="이름" value="${escapeHtml(profile.display_name)}" required><input id="editCompany" placeholder="회사명(기업회원)" value="${escapeHtml(profile.company_name)}"><input id="editPhone" placeholder="연락처" value="${escapeHtml(profile.phone)}"><textarea id="editBio" rows="4" placeholder="기업 또는 전문 분야 소개">${escapeHtml(profile.bio)}</textarea><button type="submit">저장하기</button>`;$("#authForm").onsubmit=async e=>{e.preventDefault();const patch={display_name:$("#editName").value.trim(),company_name:$("#editCompany").value.trim(),phone:$("#editPhone").value.trim(),bio:$("#editBio").value.trim()};const {data,error}=await sb.from("profiles").update(patch).eq("id",currentUser.id).select("id,display_name,role,company_name,phone,bio").maybeSingle();if(error)return toast(error.message);profile=data||{...profile,...patch};renderProfile();$("#welcome").textContent=`${profile.display_name||"회원"}님, 환영합니다!`;closeModal();toast("회원 정보가 저장되었습니다.");};$("#modal").classList.remove("hidden");}
+  function openProfileForm(){
+    if(!currentUser||!profile)return openAuth("login");
+    const company=profile.role==="company"||profile.role==="admin";
+    $("#modalTitle").textContent=company?"기업 기본정보 관리":"내 정보 수정";
+    const val=(key)=>escapeHtml(profile[key]||"");
+    const companyFields=company?`
+      <div class="form-section-title">사업자 기본정보</div>
+      <label class="modal-field">사업자 유형 <select id="editBusinessType" required><option value="">선택해 주세요</option><option value="corporation" ${profile.business_type==="corporation"?"selected":""}>법인사업자</option><option value="sole_proprietor" ${profile.business_type==="sole_proprietor"?"selected":""}>개인사업자</option></select></label>
+      <input id="editCompany" placeholder="상호 또는 법인명" value="${val("company_name")}" required>
+      <label class="modal-field">사업자등록번호 <input id="editBusinessNo" inputmode="numeric" maxlength="12" placeholder="예: 123-45-67890" value="${val("business_registration_number")}" required><small>숫자 10자리로 입력해 주세요.</small></label>
+      <label class="modal-field" id="corporationNoField">법인등록번호 <input id="editCorporationNo" inputmode="numeric" maxlength="14" placeholder="법인사업자만 입력" value="${val("corporation_registration_number")}"></label>
+      <input id="editRepresentative" placeholder="대표자명" value="${val("representative_name")}" required>
+      <label class="modal-field">개업연월일 <input id="editOpeningDate" type="date" value="${val("opening_date")}"></label>
+      <input id="editBusinessTypeDetail" placeholder="업태 (예: 제조업, 도소매업)" value="${val("business_type_detail")}">
+      <input id="editBusinessItem" placeholder="종목 (예: 산업용 장비 제조)" value="${val("business_item")}">
+      <input id="editBusinessAddress" placeholder="사업장 주소" value="${val("business_address")}">
+      <div class="form-section-title">회사 및 담당자 정보</div>
+      <input id="editName" placeholder="담당자명" value="${val("display_name")}" required>
+      <input id="editCompanyPhone" type="tel" placeholder="회사 대표 전화번호" value="${val("company_phone")}">
+      <input id="editPhone" type="tel" placeholder="담당자 휴대전화" value="${val("phone")}">
+      <input id="editWebsite" type="url" placeholder="회사 홈페이지 URL (https:// 포함)" value="${val("website_url")}">
+      <input id="editOfficialEmail" type="email" placeholder="회사 공식 이메일" value="${val("official_email")}">
+      <textarea id="editBio" rows="4" placeholder="회사 소개">${val("bio")}</textarea>
+    `:`<input id="editName" placeholder="이름" value="${val("display_name")}" required><input id="editPhone" placeholder="연락처" value="${val("phone")}"><textarea id="editBio" rows="4" placeholder="소개">${val("bio")}</textarea>`;
+    $("#authForm").innerHTML=`${companyFields}<button type="submit">저장하기</button>`;
+    const businessTypeSelect=$("#editBusinessType");
+    const corporationNoField=$("#corporationNoField");
+    const syncBusinessType=()=>{if(corporationNoField)corporationNoField.hidden=businessTypeSelect.value!=="corporation";};
+    businessTypeSelect?.addEventListener("change",syncBusinessType);syncBusinessType();
+    $("#authForm").onsubmit=async e=>{
+      e.preventDefault();
+      const patch={display_name:$("#editName").value.trim(),phone:$("#editPhone").value.trim(),bio:$("#editBio").value.trim()};
+      if(company){
+        const businessNo=$("#editBusinessNo").value.replace(/\D/g,"");
+        const corporationNo=$("#editCorporationNo").value.replace(/\D/g,"");
+        if(![10].includes(businessNo.length))return toast("사업자등록번호는 숫자 10자리로 입력해 주세요.");
+        if($("#editBusinessType").value==="corporation"&&corporationNo.length!==13)return toast("법인사업자는 법인등록번호 13자리를 입력해 주세요.");
+        const website=$("#editWebsite").value.trim();
+        if(website&&!/^https?:\/\//i.test(website))return toast("홈페이지 주소는 https:// 또는 http://로 시작해야 합니다.");
+        Object.assign(patch,{business_type:$("#editBusinessType").value,company_name:$("#editCompany").value.trim(),business_registration_number:businessNo,corporation_registration_number:$("#editBusinessType").value==="corporation"?corporationNo:null,representative_name:$("#editRepresentative").value.trim(),opening_date:$("#editOpeningDate").value||null,business_type_detail:$("#editBusinessTypeDetail").value.trim(),business_item:$("#editBusinessItem").value.trim(),business_address:$("#editBusinessAddress").value.trim(),company_phone:$("#editCompanyPhone").value.trim(),website_url:website||null,official_email:$("#editOfficialEmail").value.trim()||null});
+      }
+      const {data,error}=await sb.from("profiles").update(patch).eq("id",currentUser.id).select("*").maybeSingle();
+      if(error){console.error(error);return toast(error.message.includes("column")?"사업자 정보용 데이터베이스 항목이 아직 준비되지 않았습니다. 안내된 추가 SQL을 먼저 실행해 주세요.":error.message);}
+      profile=data||{...profile,...patch};renderProfile();$("#welcome").textContent=`${profile.display_name||"회원"}님, 환영합니다!`;closeModal();toast("회원 정보가 저장되었습니다.");
+    };
+    $("#modal").classList.remove("hidden");
+  }
   function openOfferForm(){if(!currentUser)return openAuth("login");if(!["company","admin"].includes(profile?.role))return toast("기업회원만 상품·서비스를 등록할 수 있습니다.");$("#modalTitle").textContent="상품·서비스 등록";$("#authForm").innerHTML=`<input id="offerTitle" placeholder="상품 또는 서비스명" required><input id="category" placeholder="카테고리"><textarea id="description" rows="4" placeholder="상품·서비스 소개"></textarea><button type="submit">등록하기</button>`;$("#authForm").onsubmit=async e=>{e.preventDefault();const {error}=await sb.from("offers").insert({owner_id:currentUser.id,title:$("#offerTitle").value.trim(),category:$("#category").value.trim(),description:$("#description").value.trim()});if(error)return toast(error.message);closeModal();toast("상품·서비스가 등록되었습니다.");await refreshOffers();};$("#modal").classList.remove("hidden");}
   function formatBytes(bytes){if(!Number.isFinite(Number(bytes)))return "용량 정보 없음";const units=["B","KB","MB","GB"];let n=Number(bytes),i=0;while(n>=1024&&i<units.length-1){n/=1024;i++;}return `${n.toFixed(i?1:0)} ${units[i]}`;}
   function safeFileName(name){return String(name||"file").normalize("NFKC").replace(/[^\w가-힣.\-]+/g,"_").replace(/^\.+/,"").slice(-100)||"file";}
